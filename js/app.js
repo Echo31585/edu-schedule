@@ -8,7 +8,9 @@ const state = {
     courses: [],
     lessons: [],
     approvals: [],
-    messages: []
+    messages: [],
+    // 新增：视图模式
+    scheduleView: 'week' // 'day', 'week', 'month'
 };
 
 // 用户信息
@@ -156,6 +158,7 @@ function renderWorkbench(container) {
     const todayLessons = state.lessons.filter(l => l.scheduled_date === getTodayDate()).length;
     const pendingApprovals = state.approvals.filter(a => a.status === 'PENDING').length;
     const lowBalanceStudents = state.students.filter(s => s.balance <= 5).length;
+    const thisWeekLessons = getThisWeekLessonsCount();
     
     container.innerHTML = `
         <div class="stats-grid">
@@ -175,9 +178,19 @@ function renderWorkbench(container) {
                 <div class="stat-label">今日课程</div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon">📆</div>
+                <div class="stat-value">${thisWeekLessons}</div>
+                <div class="stat-label">本周课程</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-icon">✅</div>
                 <div class="stat-value">${pendingApprovals}</div>
                 <div class="stat-label">待审批</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value">${state.courses.length}</div>
+                <div class="stat-label">课程总数</div>
             </div>
         </div>
         
@@ -190,6 +203,7 @@ function renderWorkbench(container) {
                 <button class="btn btn-secondary" onclick="navigateTo('users')">👥 用户管理</button>
                 <button class="btn btn-secondary" onclick="navigateTo('courses')">📚 课程管理</button>
                 <button class="btn btn-secondary" onclick="navigateTo('approvals')">✅ 审批管理</button>
+                <button class="btn btn-success" onclick="generateTestData()">🔧 生成测试数据</button>
             </div>
         </div>
         
@@ -213,6 +227,226 @@ function renderWorkbench(container) {
         </div>
         ` : ''}
     `;
+}
+
+// 获取本周课程数
+function getThisWeekLessonsCount() {
+    const weekDays = getWeekDays();
+    const startDate = weekDays[0].date;
+    const endDate = weekDays[6].date;
+    return state.lessons.filter(l => l.scheduled_date >= startDate && l.scheduled_date <= endDate).length;
+}
+
+// ==================== 生成测试数据 ====================
+async function generateTestData() {
+    if (!confirm('确定要生成测试数据吗？这将添加示例教师、学生、课程和排课记录。')) return;
+    
+    showToast('正在生成测试数据...', 'warning');
+    
+    try {
+        // 生成教师数据
+        const teachersData = [
+            { name_zh: '张明', name_en: 'Zhang Ming', phone: '13800001001', email: 'zhangming@edu.com', subject: 'math', status: 'active', avatar: '张' },
+            { name_zh: '李华', name_en: 'Li Hua', phone: '13800001002', email: 'lihua@edu.com', subject: 'english', status: 'active', avatar: '李' },
+            { name_zh: '王芳', name_en: 'Wang Fang', phone: '13800001003', email: 'wangfang@edu.com', subject: 'physics', status: 'active', avatar: '王' },
+            { name_zh: '陈静', name_en: 'Chen Jing', phone: '13800001004', email: 'chenjing@edu.com', subject: 'chemistry', status: 'active', avatar: '陈' },
+            { name_zh: '刘洋', name_en: 'Liu Yang', phone: '13800001005', email: 'liuyang@edu.com', subject: 'chinese', status: 'active', avatar: '刘' }
+        ];
+        
+        // 生成学生数据
+        const studentsData = [
+            { name_zh: '小明', name_en: 'Xiao Ming', phone: '13900001001', email: 'xiaoming@student.com', balance: 20, status: 'active', avatar: '明' },
+            { name_zh: '小红', name_en: 'Xiao Hong', phone: '13900001002', email: 'xiaohong@student.com', balance: 15, status: 'active', avatar: '红' },
+            { name_zh: '小刚', name_en: 'Xiao Gang', phone: '13900001003', email: 'xiaogang@student.com', balance: 8, status: 'active', avatar: '刚' },
+            { name_zh: '小丽', name_en: 'Xiao Li', phone: '13900001004', email: 'xiaoli@student.com', balance: 3, status: 'active', avatar: '丽' },
+            { name_zh: '小强', name_en: 'Xiao Qiang', phone: '13900001005', email: 'xiaoqiang@student.com', balance: 25, status: 'active', avatar: '强' },
+            { name_zh: '小美', name_en: 'Xiao Mei', phone: '13900001006', email: 'xiaomei@student.com', balance: 0, status: 'active', avatar: '美' },
+            { name_zh: '小杰', name_en: 'Xiao Jie', phone: '13900001007', email: 'xiaojie@student.com', balance: 12, status: 'active', avatar: '杰' },
+            { name_zh: '小雨', name_en: 'Xiao Yu', phone: '13900001008', email: 'xiaoyu@student.com', balance: 5, status: 'active', avatar: '雨' }
+        ];
+        
+        // 生成课程数据
+        const coursesData = [
+            { name_zh: '高中数学一对一', name_en: 'High School Math 1v1', subject: 'math', type: '1v1', price: 300, duration: 90, status: 'active' },
+            { name_zh: '初中数学一对一', name_en: 'Middle School Math 1v1', subject: 'math', type: '1v1', price: 250, duration: 90, status: 'active' },
+            { name_zh: '英语口语小班', name_en: 'English Speaking Class', subject: 'english', type: 'class', price: 150, duration: 60, status: 'active' },
+            { name_zh: '英语一对一', name_en: 'English 1v1', subject: 'english', type: '1v1', price: 280, duration: 60, status: 'active' },
+            { name_zh: '物理一对三', name_en: 'Physics 1v3', subject: 'physics', type: '1v3', price: 200, duration: 90, status: 'active' },
+            { name_zh: '化学一对一', name_en: 'Chemistry 1v1', subject: 'chemistry', type: '1v1', price: 280, duration: 90, status: 'active' },
+            { name_zh: '语文阅读写作', name_en: 'Chinese Reading & Writing', subject: 'chinese', type: '1v1', price: 260, duration: 90, status: 'active' }
+        ];
+        
+        // 批量插入教师
+        for (const teacher of teachersData) {
+            const exists = state.teachers.find(t => t.phone === teacher.phone);
+            if (!exists) {
+                await addTeacher(teacher);
+            }
+        }
+        
+        // 批量插入学生
+        for (const student of studentsData) {
+            const exists = state.students.find(s => s.phone === student.phone);
+            if (!exists) {
+                await addStudent(student);
+            }
+        }
+        
+        // 批量插入课程
+        for (const course of coursesData) {
+            const exists = state.courses.find(c => c.name_zh === course.name_zh);
+            if (!exists) {
+                await addCourse(course);
+            }
+        }
+        
+        // 重新加载数据
+        state.teachers = await getTeachers();
+        state.students = await getStudents();
+        state.courses = await getCourses();
+        
+        // 生成排课数据（本周和下周）
+        await generateLessonsData();
+        
+        // 生成审批数据
+        await generateApprovalsData();
+        
+        // 生成消息数据
+        await generateMessagesData();
+        
+        // 重新加载所有数据
+        await loadAllData();
+        
+        showToast('测试数据生成成功！', 'success');
+        renderCurrentPage();
+        
+    } catch (error) {
+        console.error('生成测试数据失败:', error);
+        showToast('生成测试数据失败', 'error');
+    }
+}
+
+// 生成排课数据
+async function generateLessonsData() {
+    if (state.teachers.length === 0 || state.students.length === 0 || state.courses.length === 0) {
+        console.log('缺少基础数据，跳过排课生成');
+        return;
+    }
+    
+    const weekDays = getWeekDays();
+    const times = ['09:00', '10:00', '14:00', '15:00', '16:00', '19:00', '20:00'];
+    const classrooms = ['A101', 'A102', 'A103', 'B201', 'B202'];
+    
+    const lessonsToAdd = [];
+    
+    // 为每天生成2-4节课
+    for (const day of weekDays) {
+        const lessonsPerDay = Math.floor(Math.random() * 3) + 2; // 2-4节
+        const usedSlots = new Set();
+        
+        for (let i = 0; i < lessonsPerDay; i++) {
+            const time = times[Math.floor(Math.random() * times.length)];
+            const slotKey = `${day.date}-${time}`;
+            
+            if (usedSlots.has(slotKey)) continue;
+            usedSlots.add(slotKey);
+            
+            const teacher = state.teachers[Math.floor(Math.random() * state.teachers.length)];
+            const student = state.students[Math.floor(Math.random() * state.students.length)];
+            const course = state.courses[Math.floor(Math.random() * state.courses.length)];
+            const classroom = classrooms[Math.floor(Math.random() * classrooms.length)];
+            
+            const startHour = parseInt(time.split(':')[0]);
+            const duration = course.duration || 60;
+            const endHour = startHour + Math.ceil(duration / 60);
+            const endTime = `${endHour.toString().padStart(2, '0')}:00`;
+            
+            // 检查是否已存在相同排课
+            const exists = state.lessons.find(l => 
+                l.scheduled_date === day.date && 
+                l.start_time === time && 
+                l.teacher_id === teacher.id
+            );
+            
+            if (!exists) {
+                lessonsToAdd.push({
+                    course_id: course.id,
+                    teacher_id: teacher.id,
+                    student_id: student.id,
+                    course_name_zh: course.name_zh,
+                    course_name_en: course.name_en,
+                    teacher_name: teacher.name_zh,
+                    student_name: student.name_zh,
+                    scheduled_date: day.date,
+                    start_time: time,
+                    end_time: endTime,
+                    classroom: classroom,
+                    status: 'SCHEDULED',
+                    type: 'regular'
+                });
+            }
+        }
+    }
+    
+    // 批量插入排课
+    for (const lesson of lessonsToAdd) {
+        await addLesson(lesson);
+    }
+    
+    state.lessons = await getLessons();
+}
+
+// 生成审批数据
+async function generateApprovalsData() {
+    const approvalTypes = ['请假', '调课', '换教师'];
+    const reasons = [
+        '家中有事，申请请假一次',
+        '时间冲突，申请调整到下周',
+        '想换一位老师试试',
+        '身体不适，申请取消本次课程',
+        '临时有事，申请改期'
+    ];
+    
+    // 只生成2-3条待审批
+    const count = Math.floor(Math.random() * 2) + 2;
+    
+    for (let i = 0; i < count; i++) {
+        const type = approvalTypes[Math.floor(Math.random() * approvalTypes.length)];
+        const reason = reasons[Math.floor(Math.random() * reasons.length)];
+        const student = state.students[Math.floor(Math.random() * state.students.length)];
+        
+        const exists = state.approvals.find(a => a.applicant === student?.name_zh && a.status === 'PENDING');
+        if (!exists && student) {
+            await addApproval({
+                type: type,
+                lesson_id: null,
+                lesson_info: `${student.name_zh} 的课程`,
+                reason: reason,
+                applicant: student.name_zh,
+                status: 'PENDING'
+            });
+        }
+    }
+    
+    state.approvals = await getApprovals();
+}
+
+// 生成消息数据
+async function generateMessagesData() {
+    const messagesData = [
+        { sender: '系统通知', avatar: '🔔', content: '欢迎使用 EduSchedule Pro 排课系统！', unread: true },
+        { sender: '教务处', avatar: '📢', content: '本周六有教师培训会议，请各位老师准时参加。', unread: true },
+        { sender: '张明老师', avatar: '👨‍🏫', content: '下周一的课程需要调整时间，请确认。', unread: false }
+    ];
+    
+    for (const msg of messagesData) {
+        const exists = state.messages.find(m => m.content === msg.content);
+        if (!exists) {
+            await addMessage(msg);
+        }
+    }
+    
+    state.messages = await getMessages();
 }
 
 // ==================== 用户管理 ====================
@@ -308,19 +542,54 @@ function renderCourses(container) {
     `;
 }
 
-// ==================== 排课管理 ====================
+// ==================== 排课管理（支持多视图） ====================
 function renderScheduling(container) {
-    const weekDays = getWeekDays();
-    const times = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '19:00', '20:00'];
+    const viewButtons = `
+        <div class="view-toggle">
+            <button class="view-btn ${state.scheduleView === 'day' ? 'active' : ''}" onclick="switchScheduleView('day')">日视图</button>
+            <button class="view-btn ${state.scheduleView === 'week' ? 'active' : ''}" onclick="switchScheduleView('week')">周视图</button>
+            <button class="view-btn ${state.scheduleView === 'month' ? 'active' : ''}" onclick="switchScheduleView('month')">月视图</button>
+        </div>
+    `;
+    
+    let scheduleContent = '';
+    
+    switch(state.scheduleView) {
+        case 'day':
+            scheduleContent = renderDayView();
+            break;
+        case 'month':
+            scheduleContent = renderMonthView();
+            break;
+        default:
+            scheduleContent = renderWeekView();
+    }
     
     container.innerHTML = `
         <div class="schedule-header">
-            <div class="schedule-nav">
-                <button onclick="changeWeek(-1)">◀ 上周</button>
-                <span class="current-period">${weekDays[0].dateStr} ~ ${weekDays[6].dateStr}</span>
-                <button onclick="changeWeek(1)">下周 ▶</button>
-            </div>
+            ${viewButtons}
             <button class="btn btn-primary" onclick="openLessonModal()">+ 新增排课</button>
+        </div>
+        ${scheduleContent}
+    `;
+}
+
+// 切换视图
+function switchScheduleView(view) {
+    state.scheduleView = view;
+    renderCurrentPage();
+}
+
+// 周视图
+function renderWeekView() {
+    const weekDays = getWeekDays();
+    const times = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '19:00', '20:00'];
+    
+    return `
+        <div class="schedule-nav" style="margin-bottom: 20px;">
+            <button onclick="changeWeek(-1)">◀ 上周</button>
+            <span class="current-period">${weekDays[0].dateStr} ~ ${weekDays[6].dateStr}</span>
+            <button onclick="changeWeek(1)">下周 ▶</button>
         </div>
         
         <div class="schedule-grid">
@@ -333,13 +602,120 @@ function renderScheduling(container) {
                     const dayLessons = state.lessons.filter(l => l.scheduled_date === d.date && l.start_time === time);
                     return `<div class="schedule-cell">
                         ${dayLessons.map(l => `
-                            <div class="schedule-lesson" onclick="viewLesson(${l.id})">
+                            <div class="schedule-lesson" onclick="showLessonDetail(${l.id})">
                                 <div class="lesson-title">${l.course_name_zh || '课程'}</div>
                                 <div class="lesson-info">${l.teacher_name || ''} | ${l.classroom || ''}</div>
                             </div>
                         `).join('')}
                     </div>`;
                 }).join('')}
+            `).join('')}
+        </div>
+    `;
+}
+
+// 日视图
+function renderDayView() {
+    const today = new Date();
+    today.setDate(today.getDate() + currentDayOffset);
+    const dateStr = today.toISOString().split('T')[0];
+    const displayDate = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+    const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const dayName = dayNames[today.getDay()];
+    
+    const times = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '19:00', '20:00'];
+    const dayLessons = state.lessons.filter(l => l.scheduled_date === dateStr);
+    
+    return `
+        <div class="schedule-nav" style="margin-bottom: 20px;">
+            <button onclick="changeDay(-1)">◀ 前一天</button>
+            <span class="current-period">${displayDate} ${dayName}</span>
+            <button onclick="changeDay(1)">后一天 ▶</button>
+        </div>
+        
+        <div class="day-view-container">
+            ${times.map(time => {
+                const timeLessons = dayLessons.filter(l => l.start_time === time);
+                return `
+                    <div class="day-time-row">
+                        <div class="day-time-label">${time}</div>
+                        <div class="day-time-content">
+                            ${timeLessons.length === 0 ? 
+                                '<div class="day-empty-slot">空闲</div>' :
+                                timeLessons.map(l => `
+                                    <div class="day-lesson-card" onclick="showLessonDetail(${l.id})">
+                                        <div class="day-lesson-title">${l.course_name_zh || '课程'}</div>
+                                        <div class="day-lesson-info">
+                                            <span>👨‍🏫 ${l.teacher_name || '-'}</span>
+                                            <span>👨‍🎓 ${l.student_name || '-'}</span>
+                                            <span>🚪 ${l.classroom || '-'}</span>
+                                            <span>⏰ ${l.start_time} - ${l.end_time}</span>
+                                        </div>
+                                    </div>
+                                `).join('')
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+        
+        <div class="day-summary" style="margin-top: 20px; padding: 16px; background: var(--white); border-radius: var(--radius);">
+            <h4>📊 当日统计</h4>
+            <p>共 <strong>${dayLessons.length}</strong> 节课</p>
+        </div>
+    `;
+}
+
+// 月视图
+function renderMonthView() {
+    const today = new Date();
+    today.setMonth(today.getMonth() + currentMonthOffset);
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const displayMonth = `${year}年${month + 1}月`;
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1; // 周一开始
+    
+    const days = [];
+    // 填充前面的空白
+    for (let i = 0; i < startDayOfWeek; i++) {
+        days.push({ day: '', date: '', lessons: [] });
+    }
+    // 填充日期
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+        const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        const dayLessons = state.lessons.filter(l => l.scheduled_date === dateStr);
+        days.push({ day: d, date: dateStr, lessons: dayLessons });
+    }
+    
+    return `
+        <div class="schedule-nav" style="margin-bottom: 20px;">
+            <button onclick="changeMonth(-1)">◀ 上月</button>
+            <span class="current-period">${displayMonth}</span>
+            <button onclick="changeMonth(1)">下月 ▶</button>
+        </div>
+        
+        <div class="month-grid">
+            <div class="month-header-cell">周一</div>
+            <div class="month-header-cell">周二</div>
+            <div class="month-header-cell">周三</div>
+            <div class="month-header-cell">周四</div>
+            <div class="month-header-cell">周五</div>
+            <div class="month-header-cell weekend">周六</div>
+            <div class="month-header-cell weekend">周日</div>
+            
+            ${days.map(d => `
+                <div class="month-cell ${d.day === '' ? 'empty' : ''} ${d.date === getTodayDate() ? 'today' : ''}">
+                    ${d.day ? `
+                        <div class="month-day-number">${d.day}</div>
+                        <div class="month-lessons-count">
+                            ${d.lessons.length > 0 ? `<span class="lesson-dot">${d.lessons.length}节课</span>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
             `).join('')}
         </div>
     `;
@@ -391,7 +767,7 @@ function renderApprovals(container) {
                     ${processed.length === 0 ? '<tr><td colspan="5" style="text-align:center;color:#999;">暂无记录</td></tr>' : 
                     processed.map(a => `
                         <tr>
-                            <td>${a.type}</td>
+                            <td><span class="status-badge pending">${a.type}</span></td>
                             <td>${a.lesson_info || '-'}</td>
                             <td>${a.applicant}</td>
                             <td><span class="status-badge ${a.status === 'APPROVED' ? 'active' : 'inactive'}">${a.status === 'APPROVED' ? '已通过' : '已拒绝'}</span></td>
@@ -628,27 +1004,131 @@ function openLessonModal() {
     
     // 填充下拉选项
     const courseSelect = document.getElementById('lessonCourse');
-    courseSelect.innerHTML = state.courses.map(c => `<option value="${c.id}">${c.name_zh}</option>`).join('');
+    courseSelect.innerHTML = state.courses.length === 0 ? 
+        '<option value="">请先添加课程</option>' :
+        state.courses.map(c => `<option value="${c.id}">${c.name_zh}</option>`).join('');
     
     const teacherSelect = document.getElementById('lessonTeacher');
-    teacherSelect.innerHTML = state.teachers.map(t => `<option value="${t.id}">${t.name_zh}</option>`).join('');
+    teacherSelect.innerHTML = state.teachers.length === 0 ?
+        '<option value="">请先添加教师</option>' :
+        state.teachers.map(t => `<option value="${t.id}">${t.name_zh}</option>`).join('');
     
     const studentSelect = document.getElementById('lessonStudent');
-    studentSelect.innerHTML = state.students.map(s => `<option value="${s.id}">${s.name_zh}</option>`).join('');
+    studentSelect.innerHTML = state.students.length === 0 ?
+        '<option value="">请先添加学生</option>' :
+        state.students.map(s => `<option value="${s.id}">${s.name_zh}</option>`).join('');
     
     document.getElementById('lessonDate').value = getTodayDate();
+    document.getElementById('lessonStartTime').value = '09:00';
+    document.getElementById('lessonEndTime').value = '10:00';
     
     openModal('lessonModal');
 }
 
+// 编辑排课
+function editLesson(id) {
+    const lesson = state.lessons.find(l => l.id === id);
+    if (!lesson) return;
+    
+    document.getElementById('lessonModalTitle').textContent = '编辑排课';
+    document.getElementById('editLessonId').value = id;
+    
+    // 填充下拉选项
+    const courseSelect = document.getElementById('lessonCourse');
+    courseSelect.innerHTML = state.courses.map(c => `<option value="${c.id}" ${c.id === lesson.course_id ? 'selected' : ''}>${c.name_zh}</option>`).join('');
+    
+    const teacherSelect = document.getElementById('lessonTeacher');
+    teacherSelect.innerHTML = state.teachers.map(t => `<option value="${t.id}" ${t.id === lesson.teacher_id ? 'selected' : ''}>${t.name_zh}</option>`).join('');
+    
+    const studentSelect = document.getElementById('lessonStudent');
+    studentSelect.innerHTML = state.students.map(s => `<option value="${s.id}" ${s.id === lesson.student_id ? 'selected' : ''}>${s.name_zh}</option>`).join('');
+    
+    document.getElementById('lessonDate').value = lesson.scheduled_date;
+    document.getElementById('lessonStartTime').value = lesson.start_time;
+    document.getElementById('lessonEndTime').value = lesson.end_time;
+    document.getElementById('lessonClassroom').value = lesson.classroom;
+    
+    openModal('lessonModal');
+}
+
+// 显示课程详情（点击课程卡片）
+function showLessonDetail(id) {
+    const lesson = state.lessons.find(l => l.id === id);
+    if (!lesson) return;
+    
+    // 创建详情弹窗内容
+    const detailHtml = `
+        <div class="lesson-detail-content">
+            <div class="detail-row"><label>课程：</label><span>${lesson.course_name_zh || '-'}</span></div>
+            <div class="detail-row"><label>教师：</label><span>${lesson.teacher_name || '-'}</span></div>
+            <div class="detail-row"><label>学生：</label><span>${lesson.student_name || '-'}</span></div>
+            <div class="detail-row"><label>日期：</label><span>${lesson.scheduled_date}</span></div>
+            <div class="detail-row"><label>时间：</label><span>${lesson.start_time} - ${lesson.end_time}</span></div>
+            <div class="detail-row"><label>教室：</label><span>${lesson.classroom || '-'}</span></div>
+            <div class="detail-row"><label>状态：</label><span class="status-badge ${lesson.status === 'COMPLETED' ? 'active' : 'pending'}">${getStatusName(lesson.status)}</span></div>
+        </div>
+    `;
+    
+    document.getElementById('lessonDetailContent').innerHTML = detailHtml;
+    document.getElementById('lessonDetailId').value = id;
+    openModal('lessonDetailModal');
+}
+
+// 从详情弹窗编辑
+function editLessonFromDetail() {
+    const id = parseInt(document.getElementById('lessonDetailId').value);
+    closeModal('lessonDetailModal');
+    editLesson(id);
+}
+
+// 从详情弹窗删除
+async function deleteLessonFromDetail() {
+    const id = parseInt(document.getElementById('lessonDetailId').value);
+    if (!confirm('确定删除此排课？')) return;
+    
+    await deleteLesson(id);
+    state.lessons = await getLessons();
+    closeModal('lessonDetailModal');
+    showToast('删除成功', 'success');
+    renderCurrentPage();
+}
+
+// 保存排课（增强版冲突检测）
 async function saveLesson() {
+    const id = document.getElementById('editLessonId').value;
     const courseId = document.getElementById('lessonCourse').value;
     const teacherId = document.getElementById('lessonTeacher').value;
     const studentId = document.getElementById('lessonStudent').value;
+    const date = document.getElementById('lessonDate').value;
+    const startTime = document.getElementById('lessonStartTime').value;
+    const endTime = document.getElementById('lessonEndTime').value;
+    const classroom = document.getElementById('lessonClassroom').value;
+    
+    // 验证必填项
+    if (!courseId || !teacherId || !studentId || !date) {
+        showToast('请填写完整信息', 'error');
+        return;
+    }
     
     const course = state.courses.find(c => c.id == courseId);
     const teacher = state.teachers.find(t => t.id == teacherId);
     const student = state.students.find(s => s.id == studentId);
+    
+    // 增强冲突检测
+    const conflicts = checkScheduleConflicts(
+        id ? parseInt(id) : null,
+        date,
+        startTime,
+        endTime,
+        parseInt(teacherId),
+        parseInt(studentId),
+        classroom
+    );
+    
+    if (conflicts.length > 0) {
+        showToast(`排课冲突：${conflicts.join('；')}`, 'error');
+        return;
+    }
     
     const data = {
         course_id: parseInt(courseId),
@@ -658,43 +1138,71 @@ async function saveLesson() {
         course_name_en: course ? course.name_en : '',
         teacher_name: teacher ? teacher.name_zh : '',
         student_name: student ? student.name_zh : '',
-        scheduled_date: document.getElementById('lessonDate').value,
-        start_time: document.getElementById('lessonStartTime').value,
-        end_time: document.getElementById('lessonEndTime').value,
-        classroom: document.getElementById('lessonClassroom').value,
+        scheduled_date: date,
+        start_time: startTime,
+        end_time: endTime,
+        classroom: classroom,
         status: 'SCHEDULED',
         type: 'regular'
     };
     
-    if (!data.scheduled_date) {
-        showToast('请选择上课日期', 'error');
-        return;
+    if (id) {
+        // 编辑模式
+        await updateLesson(parseInt(id), data);
+        showToast('修改成功', 'success');
+    } else {
+        // 新增模式
+        await addLesson(data);
+        showToast('排课成功', 'success');
     }
     
-    // 检查冲突
-    const conflict = state.lessons.find(l => 
-        l.scheduled_date === data.scheduled_date && 
-        l.start_time === data.start_time &&
-        (l.teacher_id == data.teacher_id || l.classroom === data.classroom)
-    );
-    
-    if (conflict) {
-        showToast('时间或教室冲突！', 'error');
-        return;
-    }
-    
-    await addLesson(data);
     state.lessons = await getLessons();
     closeModal('lessonModal');
-    showToast('排课成功', 'success');
     renderCurrentPage();
 }
 
-function viewLesson(id) {
-    const lesson = state.lessons.find(l => l.id === id);
-    if (lesson) {
-        alert(`课程: ${lesson.course_name_zh}\n教师: ${lesson.teacher_name}\n学生: ${lesson.student_name}\n时间: ${lesson.scheduled_date} ${lesson.start_time}-${lesson.end_time}\n教室: ${lesson.classroom}`);
+// 增强版冲突检测
+function checkScheduleConflicts(excludeId, date, startTime, endTime, teacherId, studentId, classroom) {
+    const conflicts = [];
+    
+    // 获取同一日期的所有排课（排除当前编辑的课程）
+    const sameDayLessons = state.lessons.filter(l => 
+        l.scheduled_date === date && 
+        (excludeId === null || l.id !== excludeId)
+    );
+    
+    // 检测时间重叠的辅助函数
+    function isTimeOverlap(start1, end1, start2, end2) {
+        return start1 < end2 && end1 > start2;
     }
+    
+    for (const lesson of sameDayLessons) {
+        const hasTimeOverlap = isTimeOverlap(startTime, endTime, lesson.start_time, lesson.end_time);
+        
+        if (hasTimeOverlap) {
+            // 教师冲突
+            if (lesson.teacher_id === teacherId) {
+                conflicts.push(`教师「${lesson.teacher_name}」在 ${lesson.start_time}-${lesson.end_time} 已有课程`);
+            }
+            
+            // 学生冲突
+            if (lesson.student_id === studentId) {
+                conflicts.push(`学生「${lesson.student_name}」在 ${lesson.start_time}-${lesson.end_time} 已有课程`);
+            }
+            
+            // 教室冲突
+            if (lesson.classroom === classroom && classroom) {
+                conflicts.push(`教室「${classroom}」在 ${lesson.start_time}-${lesson.end_time} 已被占用`);
+            }
+        }
+    }
+    
+    return conflicts;
+}
+
+// 旧的viewLesson函数改为showLessonDetail
+function viewLesson(id) {
+    showLessonDetail(id);
 }
 
 // 审批处理
@@ -753,8 +1261,20 @@ function getTypeName(type) {
     return names[type] || type || '-';
 }
 
+function getStatusName(status) {
+    const names = { 
+        'SCHEDULED': '已排课', 
+        'COMPLETED': '已完成', 
+        'CANCELLED': '已取消',
+        'PENDING': '待确认'
+    };
+    return names[status] || status || '-';
+}
+
 // 周视图相关
 let currentWeekOffset = 0;
+let currentDayOffset = 0;
+let currentMonthOffset = 0;
 
 function getWeekDays() {
     const today = new Date();
@@ -784,4 +1304,14 @@ function changeWeek(offset) {
     renderCurrentPage();
 }
 
-console.log('App.js 加载完成');
+function changeDay(offset) {
+    currentDayOffset += offset;
+    renderCurrentPage();
+}
+
+function changeMonth(offset) {
+    currentMonthOffset += offset;
+    renderCurrentPage();
+}
+
+console.log('App.js 加载完成 - Day 2 更新版');

@@ -217,7 +217,9 @@ body {
 .btn-secondary { background: var(--gray-100); color: var(--gray-700); }
 .btn-secondary:hover { background: var(--gray-200); }
 .btn-success { background: var(--success); color: var(--white); }
+.btn-success:hover { background: #059669; }
 .btn-danger { background: var(--danger); color: var(--white); }
+.btn-danger:hover { background: #dc2626; }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 
 .form-group { margin-bottom: 16px; }
@@ -260,6 +262,7 @@ body {
     transform: scale(0.9);
     transition: all 0.3s;
 }
+.modal-content.modal-sm { max-width: 420px; }
 .modal-overlay.active .modal-content { transform: scale(1); }
 .modal-header {
     padding: 20px 24px;
@@ -277,6 +280,7 @@ body {
     border-radius: 50%;
     cursor: pointer;
 }
+.modal-close:hover { background: var(--gray-200); }
 .modal-body { padding: 24px; max-height: 60vh; overflow-y: auto; }
 .modal-footer { padding: 16px 24px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 12px; }
 
@@ -302,7 +306,7 @@ body {
 .toast.warning { border-left: 4px solid var(--warning); }
 
 /* ==================== 统计卡片 ==================== */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px; margin-bottom: 24px; }
 .stat-card {
     background: var(--white);
     border-radius: var(--radius);
@@ -357,18 +361,62 @@ body {
 .action-btn.edit { color: var(--primary); }
 .action-btn.delete { color: var(--danger); }
 
+/* ==================== 视图切换按钮 ==================== */
+.view-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--gray-100);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+}
+.view-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-600);
+    transition: all 0.2s;
+}
+.view-btn:hover { background: var(--gray-200); }
+.view-btn.active {
+    background: var(--white);
+    color: var(--primary);
+    box-shadow: var(--shadow);
+}
+
 /* ==================== 课程表 ==================== */
-.schedule-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.schedule-nav { display: flex; align-items: center; gap: 12px; }
+.schedule-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px; 
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.schedule-nav { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+}
 .schedule-nav button {
     padding: 8px 16px;
     border: 1px solid var(--gray-300);
     background: var(--white);
     border-radius: var(--radius-sm);
     cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
 }
-.schedule-nav button:hover { background: var(--gray-50); }
-.schedule-nav .current-period { font-size: 18px; font-weight: 600; min-width: 200px; text-align: center; }
+.schedule-nav button:hover { background: var(--gray-50); border-color: var(--primary); }
+.schedule-nav .current-period { 
+    font-size: 16px; 
+    font-weight: 600; 
+    min-width: 200px; 
+    text-align: center; 
+}
 
 .schedule-grid {
     display: grid;
@@ -386,6 +434,7 @@ body {
     font-weight: 600;
     font-size: 14px;
 }
+.schedule-header-cell small { font-weight: 400; color: var(--gray-500); }
 .schedule-time-cell {
     padding: 12px 8px;
     text-align: center;
@@ -408,10 +457,167 @@ body {
     font-size: 12px;
     margin-bottom: 4px;
     cursor: pointer;
+    transition: all 0.2s;
 }
-.schedule-lesson:hover { opacity: 0.9; }
+.schedule-lesson:hover { 
+    opacity: 0.9; 
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+}
 .schedule-lesson .lesson-title { font-weight: 600; margin-bottom: 2px; }
-.schedule-lesson .lesson-info { opacity: 0.9; }
+.schedule-lesson .lesson-info { opacity: 0.9; font-size: 11px; }
+
+/* ==================== 日视图 ==================== */
+.day-view-container {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+.day-time-row {
+    display: flex;
+    border-bottom: 1px solid var(--gray-100);
+}
+.day-time-row:last-child { border-bottom: none; }
+.day-time-label {
+    width: 80px;
+    padding: 16px;
+    background: var(--gray-50);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-align: center;
+    border-right: 1px solid var(--gray-200);
+    flex-shrink: 0;
+}
+.day-time-content {
+    flex: 1;
+    padding: 12px;
+    min-height: 80px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+}
+.day-empty-slot {
+    color: var(--gray-400);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+.day-lesson-card {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: var(--white);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    min-width: 280px;
+    max-width: 400px;
+}
+.day-lesson-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.day-lesson-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.day-lesson-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+.day-lesson-info span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.day-summary {
+    background: var(--white);
+    box-shadow: var(--shadow);
+}
+.day-summary h4 { margin-bottom: 8px; }
+
+/* ==================== 月视图 ==================== */
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+.month-header-cell {
+    padding: 12px;
+    text-align: center;
+    background: var(--gray-50);
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 1px solid var(--gray-200);
+}
+.month-header-cell.weekend { color: var(--danger); }
+.month-cell {
+    min-height: 100px;
+    padding: 8px;
+    border-bottom: 1px solid var(--gray-100);
+    border-right: 1px solid var(--gray-100);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.month-cell:hover { background: var(--gray-50); }
+.month-cell.empty { 
+    background: var(--gray-50); 
+    cursor: default;
+}
+.month-cell.today {
+    background: rgba(37, 99, 235, 0.05);
+    border: 2px solid var(--primary);
+}
+.month-day-number {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.month-cell.today .month-day-number { color: var(--primary); }
+.month-lessons-count {
+    margin-top: 4px;
+}
+.lesson-dot {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--primary);
+    color: var(--white);
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+/* ==================== 课程详情 ==================== */
+.lesson-detail-content {
+    padding: 8px 0;
+}
+.detail-row {
+    display: flex;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-100);
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-row label {
+    width: 80px;
+    color: var(--gray-500);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.detail-row span {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+}
 
 /* ==================== 空状态 ==================== */
 .empty-state {
@@ -423,11 +629,47 @@ body {
 .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--gray-700); }
 
 /* ==================== 响应式 ==================== */
+@media (max-width: 1024px) {
+    .schedule-grid { 
+        grid-template-columns: 60px repeat(7, 1fr); 
+        font-size: 12px; 
+    }
+    .schedule-nav .current-period { min-width: 160px; font-size: 14px; }
+}
+
 @media (max-width: 768px) {
-    .sidebar { position: fixed; left: -260px; top: 0; bottom: 0; z-index: 100; transition: left 0.3s; }
+    .sidebar { 
+        position: fixed; 
+        left: -260px; 
+        top: 0; 
+        bottom: 0; 
+        z-index: 100; 
+        transition: left 0.3s; 
+    }
     .sidebar.open { left: 0; }
     .menu-toggle { display: block; }
     .form-row { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: 1fr 1fr; }
-    .schedule-grid { grid-template-columns: 60px repeat(7, 1fr); font-size: 12px; }
+    .schedule-header { flex-direction: column; align-items: stretch; }
+    .view-toggle { justify-content: center; }
+    .schedule-nav { justify-content: center; }
+    .schedule-grid { 
+        grid-template-columns: 50px repeat(7, 1fr); 
+        font-size: 11px;
+    }
+    .schedule-header-cell { padding: 8px 4px; }
+    .schedule-lesson { padding: 4px; font-size: 10px; }
+    .schedule-lesson .lesson-info { display: none; }
+    .day-lesson-card { min-width: 100%; }
+    .month-cell { min-height: 70px; padding: 4px; }
+    .month-day-number { font-size: 12px; }
+    .lesson-dot { font-size: 9px; padding: 1px 6px; }
+}
+
+@media (max-width: 480px) {
+    .login-container { padding: 24px; }
+    .role-selector { grid-template-columns: 1fr; }
+    .content-area { padding: 16px; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .modal-content { margin: 16px; }
 }

@@ -277,6 +277,24 @@
         </div>
     </div>
 
+    <!-- 排课详情模态框（新增） -->
+    <div class="modal-overlay" id="lessonDetailModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">📅 课程详情</h3>
+                <button class="modal-close" onclick="closeModal('lessonDetailModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="lessonDetailId">
+                <div id="lessonDetailContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="deleteLessonFromDetail()">🗑️ 删除</button>
+                <button class="btn btn-primary" onclick="editLessonFromDetail()">✏️ 编辑</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 引入脚本 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
