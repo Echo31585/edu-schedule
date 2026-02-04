@@ -277,7 +277,7 @@
         </div>
     </div>
 
-    <!-- 排课详情模态框（新增） -->
+    <!-- 排课详情模态框 -->
     <div class="modal-overlay" id="lessonDetailModal">
         <div class="modal-content modal-sm">
             <div class="modal-header">
@@ -288,9 +288,192 @@
                 <input type="hidden" id="lessonDetailId">
                 <div id="lessonDetailContent"></div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" id="lessonDetailFooter">
                 <button class="btn btn-danger" onclick="deleteLessonFromDetail()">🗑️ 删除</button>
+                <button class="btn btn-warning" onclick="openLeaveModal()">📝 请假/调课</button>
+                <button class="btn btn-success" onclick="completeLessonFromDetail()">✅ 完成课程</button>
                 <button class="btn btn-primary" onclick="editLessonFromDetail()">✏️ 编辑</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day 3 新增：学生充值模态框 -->
+    <div class="modal-overlay" id="rechargeModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">💰 课时充值</h3>
+                <button class="modal-close" onclick="closeModal('rechargeModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="rechargeStudentId">
+                <div class="recharge-info">
+                    <div class="info-row">
+                        <span class="info-label">学生姓名：</span>
+                        <span class="info-value" id="rechargeStudentName">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">当前余额：</span>
+                        <span class="info-value" id="rechargeCurrentBalance">0 课时</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">充值课时数 *</label>
+                    <input type="number" class="form-input" id="rechargeAmount" placeholder="请输入充值课时数" min="1" value="10" onchange="updateRechargePreview()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">备注</label>
+                    <input type="text" class="form-input" id="rechargeReason" placeholder="例如：2月份课时充值">
+                </div>
+                <div class="recharge-preview">
+                    <span>充值后余额：</span>
+                    <strong id="rechargeNewBalance">10 课时</strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('rechargeModal')">取消</button>
+                <button class="btn btn-success" onclick="confirmRecharge()">💰 确认充值</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day 3 新增：请假/调课申请模态框 -->
+    <div class="modal-overlay" id="leaveModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">📝 请假/调课申请</h3>
+                <button class="modal-close" onclick="closeModal('leaveModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="leaveLessonId">
+                <div class="leave-lesson-info" id="leaveLessonInfo"></div>
+                <div class="form-group">
+                    <label class="form-label">申请类型 *</label>
+                    <select class="form-select" id="leaveType" onchange="toggleRescheduleFields()">
+                        <option value="请假">请假（取消本次课程）</option>
+                        <option value="调课">调课（改期上课）</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">申请原因 *</label>
+                    <textarea class="form-input" id="leaveReason" rows="3" placeholder="请填写申请原因"></textarea>
+                </div>
+                <div id="rescheduleFields" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">调整日期 *</label>
+                        <input type="date" class="form-input" id="rescheduleDate">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">开始时间</label>
+                            <select class="form-select" id="rescheduleStartTime">
+                                <option value="08:00">08:00</option>
+                                <option value="09:00">09:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:00">11:00</option>
+                                <option value="14:00">14:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                                <option value="17:00">17:00</option>
+                                <option value="19:00">19:00</option>
+                                <option value="20:00">20:00</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">结束时间</label>
+                            <select class="form-select" id="rescheduleEndTime">
+                                <option value="09:00">09:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:00">11:00</option>
+                                <option value="12:00">12:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                                <option value="17:00">17:00</option>
+                                <option value="18:00">18:00</option>
+                                <option value="20:00">20:00</option>
+                                <option value="21:00">21:00</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('leaveModal')">取消</button>
+                <button class="btn btn-primary" onclick="submitLeaveRequest()">提交申请</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day 3 新增：审批详情模态框 -->
+    <div class="modal-overlay" id="approvalDetailModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">📋 审批详情</h3>
+                <button class="modal-close" onclick="closeModal('approvalDetailModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="approvalDetailId">
+                <input type="hidden" id="approvalDetailType">
+                <input type="hidden" id="approvalDetailLessonId">
+                <div id="approvalDetailContent"></div>
+                <div id="approvalRescheduleFields" style="display:none;">
+                    <hr style="margin: 16px 0;">
+                    <h4 style="margin-bottom: 12px;">确认调课时间</h4>
+                    <div class="form-group">
+                        <label class="form-label">调整日期 *</label>
+                        <input type="date" class="form-input" id="approvalNewDate">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">开始时间</label>
+                            <select class="form-select" id="approvalNewStartTime">
+                                <option value="">保持原时间</option>
+                                <option value="08:00">08:00</option>
+                                <option value="09:00">09:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="14:00">14:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                                <option value="19:00">19:00</option>
+                                <option value="20:00">20:00</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">结束时间</label>
+                            <select class="form-select" id="approvalNewEndTime">
+                                <option value="">保持原时间</option>
+                                <option value="09:00">09:00</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:00">11:00</option>
+                                <option value="15:00">15:00</option>
+                                <option value="16:00">16:00</option>
+                                <option value="17:00">17:00</option>
+                                <option value="20:00">20:00</option>
+                                <option value="21:00">21:00</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="processApproval('REJECTED')">❌ 拒绝</button>
+                <button class="btn btn-success" onclick="processApproval('APPROVED')">✅ 通过</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Day 3 新增：教师结算详情模态框 -->
+    <div class="modal-overlay" id="settlementDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">💰 教师结算详情</h3>
+                <button class="modal-close" onclick="closeModal('settlementDetailModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="settlementDetailContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('settlementDetailModal')">关闭</button>
+                <button class="btn btn-primary" onclick="exportSettlement()">📥 导出</button>
             </div>
         </div>
     </div>

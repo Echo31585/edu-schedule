@@ -220,18 +220,21 @@ body {
 .btn-success:hover { background: #059669; }
 .btn-danger { background: var(--danger); color: var(--white); }
 .btn-danger:hover { background: #dc2626; }
+.btn-warning { background: var(--warning); color: var(--white); }
+.btn-warning:hover { background: #d97706; }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 
 .form-group { margin-bottom: 16px; }
 .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--gray-700); margin-bottom: 6px; }
-.form-input, .form-select {
+.form-input, .form-select, textarea.form-input {
     width: 100%;
     padding: 10px 14px;
     border: 1px solid var(--gray-300);
     border-radius: var(--radius-sm);
     font-size: 14px;
+    font-family: inherit;
 }
-.form-input:focus, .form-select:focus {
+.form-input:focus, .form-select:focus, textarea.form-input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -282,7 +285,7 @@ body {
 }
 .modal-close:hover { background: var(--gray-200); }
 .modal-body { padding: 24px; max-height: 60vh; overflow-y: auto; }
-.modal-footer { padding: 16px 24px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 12px; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
 
 /* ==================== Toast 提示 ==================== */
 .toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
@@ -330,6 +333,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 .table-title { font-size: 16px; font-weight: 600; }
 .data-table { width: 100%; border-collapse: collapse; }
@@ -464,6 +469,13 @@ body {
     transform: scale(1.02);
     box-shadow: var(--shadow-md);
 }
+.schedule-lesson.completed {
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+}
+.schedule-lesson.cancelled {
+    background: linear-gradient(135deg, var(--gray-400) 0%, var(--gray-500) 100%);
+    opacity: 0.6;
+}
 .schedule-lesson .lesson-title { font-weight: 600; margin-bottom: 2px; }
 .schedule-lesson .lesson-info { opacity: 0.9; font-size: 11px; }
 
@@ -520,6 +532,13 @@ body {
 .day-lesson-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
+}
+.day-lesson-card.completed {
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+}
+.day-lesson-card.cancelled {
+    background: linear-gradient(135deg, var(--gray-400) 0%, var(--gray-500) 100%);
+    opacity: 0.6;
 }
 .day-lesson-title {
     font-size: 16px;
@@ -619,6 +638,162 @@ body {
     font-weight: 500;
 }
 
+/* ==================== Day 3 新增：充值相关样式 ==================== */
+.recharge-info {
+    background: var(--gray-50);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+}
+.recharge-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+.recharge-info .info-row:first-child {
+    border-bottom: 1px solid var(--gray-200);
+}
+.recharge-info .info-label {
+    color: var(--gray-500);
+}
+.recharge-info .info-value {
+    font-weight: 600;
+}
+.recharge-preview {
+    background: rgba(16, 185, 129, 0.1);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    margin-top: 16px;
+}
+.recharge-preview strong {
+    color: var(--success);
+    font-size: 20px;
+}
+
+/* 余额显示样式 */
+.balance-warning { color: var(--danger); font-weight: 600; }
+.balance-low { color: var(--warning); font-weight: 600; }
+.balance-normal { color: var(--gray-700); }
+
+/* ==================== Day 3 新增：请假/调课样式 ==================== */
+.leave-lesson-info {
+    background: var(--gray-50);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+}
+.leave-lesson-info .lesson-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+.leave-lesson-info .lesson-detail {
+    color: var(--gray-600);
+    font-size: 14px;
+}
+
+/* ==================== Day 3 新增：审批详情样式 ==================== */
+.approval-info {
+    background: var(--gray-50);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+}
+.approval-info .info-item {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+.approval-info .info-item:last-child {
+    border-bottom: none;
+}
+.approval-info .info-item label {
+    width: 80px;
+    color: var(--gray-500);
+    font-size: 13px;
+}
+.approval-info .info-item span {
+    flex: 1;
+    font-size: 14px;
+}
+
+/* ==================== Day 3 新增：结算相关样式 ==================== */
+.settlement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.settlement-filters {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.settlement-filters select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+}
+
+.settlement-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+.settlement-card {
+    background: var(--white);
+    padding: 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+.settlement-card .card-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+.settlement-card .card-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+}
+.settlement-card .card-label {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin-top: 4px;
+}
+
+.settlement-detail-header {
+    background: var(--gray-50);
+    padding: 20px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+}
+.settlement-detail-header h4 {
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+.settlement-detail-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+.settlement-detail-stats .stat-item {
+    text-align: center;
+}
+.settlement-detail-stats .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+}
+.settlement-detail-stats .stat-label {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
 /* ==================== 空状态 ==================== */
 .empty-state {
     text-align: center;
@@ -664,6 +839,9 @@ body {
     .month-cell { min-height: 70px; padding: 4px; }
     .month-day-number { font-size: 12px; }
     .lesson-dot { font-size: 9px; padding: 1px 6px; }
+    .modal-footer { flex-direction: column; }
+    .modal-footer .btn { width: 100%; justify-content: center; }
+    .settlement-detail-stats { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
