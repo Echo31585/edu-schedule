@@ -159,7 +159,7 @@ function renderCurrentPage() {
 
 // ==================== 工作台 ====================
 function renderWorkbench(container) {
-    const todayLessons = state.lessons.filter(l => l.scheduled_date === getTodayDate()).length;
+    const todayLessons = state.lessons.filter(l => l.schedule_date === getTodayDate()).length;
     const pendingApprovals = state.approvals.filter(a => a.status === 'PENDING').length;
     const lowBalanceStudents = state.students.filter(s => s.balance <= 5).length;
     const thisWeekLessons = getThisWeekLessonsCount();
@@ -241,7 +241,7 @@ function getThisWeekLessonsCount() {
     const weekDays = getWeekDays();
     const startDate = weekDays[0].date;
     const endDate = weekDays[6].date;
-    return state.lessons.filter(l => l.scheduled_date >= startDate && l.scheduled_date <= endDate).length;
+    return state.lessons.filter(l => l.schedule_date >= startDate && l.schedule_date <= endDate).length;
 }
 
 // ==================== 生成测试数据 ====================
@@ -369,7 +369,7 @@ async function generateLessonsData() {
             const endTime = `${endHour.toString().padStart(2, '0')}:00`;
             
             const exists = state.lessons.find(l => 
-                l.scheduled_date === day.date && 
+                l.schedule_date === day.date && 
                 l.start_time === time && 
                 l.teacher_id === teacher.id
             );
@@ -383,7 +383,7 @@ async function generateLessonsData() {
                     course_name_en: course.name_en,
                     teacher_name: teacher.name_zh,
                     student_name: student.name_zh,
-                    scheduled_date: day.date,
+                    schedule_date: day.date,
                     start_time: time,
                     end_time: endTime,
                     classroom: classroom,
@@ -604,7 +604,7 @@ function renderWeekView() {
             ${times.map(time => `
                 <div class="schedule-time-cell">${time}</div>
                 ${weekDays.map(d => {
-                    const dayLessons = state.lessons.filter(l => l.scheduled_date === d.date && l.start_time === time);
+                    const dayLessons = state.lessons.filter(l => l.schedule_date === d.date && l.start_time === time);
                     return `<div class="schedule-cell">
                         ${dayLessons.map(l => `
                             <div class="schedule-lesson ${l.status === 'COMPLETED' ? 'completed' : ''} ${l.status === 'CANCELLED' ? 'cancelled' : ''}" onclick="showLessonDetail(${l.id})">
@@ -629,7 +629,7 @@ function renderDayView() {
     const dayName = dayNames[today.getDay()];
     
     const times = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '19:00', '20:00'];
-    const dayLessons = state.lessons.filter(l => l.scheduled_date === dateStr);
+    const dayLessons = state.lessons.filter(l => l.schedule_date === dateStr);
     
     return `
         <div class="schedule-nav" style="margin-bottom: 20px;">
@@ -690,7 +690,7 @@ function renderMonthView() {
     }
     for (let d = 1; d <= lastDay.getDate(); d++) {
         const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
-        const dayLessons = state.lessons.filter(l => l.scheduled_date === dateStr);
+        const dayLessons = state.lessons.filter(l => l.schedule_date === dateStr);
         days.push({ day: d, date: dateStr, lessons: dayLessons });
     }
     
@@ -828,8 +828,8 @@ function renderSettlement(container) {
     const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
     const completedLessons = state.lessons.filter(l => 
         l.status === 'COMPLETED' && 
-        l.scheduled_date >= startDate && 
-        l.scheduled_date <= endDate
+        l.schedule_date >= startDate && 
+        l.schedule_date <= endDate
     );
     
     // 按教师分组统计
@@ -964,8 +964,8 @@ function showTeacherSettlementDetail(teacherId, teacherName) {
     const lessons = state.lessons.filter(l => 
         l.teacher_id === teacherId && 
         l.status === 'COMPLETED' && 
-        l.scheduled_date >= startDate && 
-        l.scheduled_date <= endDate
+        l.schedule_date >= startDate && 
+        l.schedule_date <= endDate
     );
     
     const totalAmount = lessons.length * 200;
@@ -996,7 +996,7 @@ function showTeacherSettlementDetail(teacherId, teacherName) {
             <tbody>
                 ${lessons.map(l => `
                     <tr>
-                        <td>${l.scheduled_date}</td>
+                        <td>${l.schedule_date}</td>
                         <td>${l.course_name_zh || '-'}</td>
                         <td>${l.student_name || '-'}</td>
                         <td>${l.start_time}-${l.end_time}</td>
@@ -1335,7 +1335,7 @@ async function saveSingleLesson(editId) {
         course_name_en: course ? course.name_en : '',
         teacher_name: teacher ? teacher.name_zh : '',
         student_name: student ? student.name_zh : '',
-        scheduled_date: date,
+        schedule_date: date,
         start_time: startTime,
         end_time: endTime,
         classroom: classroom,
@@ -1461,7 +1461,7 @@ async function saveBatchLessons() {
             course_name_en: course ? course.name_en : '',
             teacher_name: teacher ? teacher.name_zh : '',
             student_name: student ? student.name_zh : '',
-            scheduled_date: date,
+            schedule_date: date,
             start_time: startTime,
             end_time: endTime,
             classroom: classroom,
@@ -1590,7 +1590,7 @@ function checkScheduleConflicts(excludeId, date, startTime, endTime, teacherId, 
     
     // 获取同一日期的所有排课（排除当前编辑的课程）
     const sameDayLessons = state.lessons.filter(l => 
-        l.scheduled_date === date && 
+        l.schedule_date === date && 
         l.status !== 'CANCELLED' &&  // 忽略已取消的课程
         (excludeId === null || l.id !== excludeId)
     );
@@ -1658,7 +1658,7 @@ function showLessonDetail(id) {
             <div class="detail-row"><label>课程：</label><span>${lesson.course_name_zh || '-'}</span></div>
             <div class="detail-row"><label>教师：</label><span>${lesson.teacher_name || '-'}</span></div>
             <div class="detail-row"><label>学生：</label><span>${lesson.student_name || '-'} (余额: <span class="${studentBalance <= 0 ? 'balance-warning' : studentBalance <= 5 ? 'balance-low' : ''}">${studentBalance}</span>)</span></div>
-            <div class="detail-row"><label>日期：</label><span>${lesson.scheduled_date}</span></div>
+            <div class="detail-row"><label>日期：</label><span>${lesson.schedule_date}</span></div>
             <div class="detail-row"><label>时间：</label><span>${lesson.start_time} - ${lesson.end_time}</span></div>
             <div class="detail-row"><label>教室：</label><span>${lesson.classroom || '-'}</span></div>
             <div class="detail-row"><label>状态：</label><span class="status-badge ${lesson.status === 'COMPLETED' ? 'active' : lesson.status === 'CANCELLED' ? 'inactive' : 'pending'}">${getStatusName(lesson.status)}</span></div>
@@ -1743,7 +1743,7 @@ async function saveLesson() {
         course_name_en: course ? course.name_en : '',
         teacher_name: teacher ? teacher.name_zh : '',
         student_name: student ? student.name_zh : '',
-        scheduled_date: date,
+        schedule_date: date,
         start_time: startTime,
         end_time: endTime,
         classroom: classroom,
@@ -1769,7 +1769,7 @@ function checkScheduleConflicts(excludeId, date, startTime, endTime, teacherId, 
     const conflicts = [];
     
     const sameDayLessons = state.lessons.filter(l => 
-        l.scheduled_date === date && 
+        l.schedule_date === date && 
         l.status !== 'CANCELLED' &&
         (excludeId === null || l.id !== excludeId)
     );
@@ -1933,7 +1933,7 @@ function openLeaveModal() {
         <div class="lesson-title">${lesson.course_name_zh}</div>
         <div class="lesson-detail">
             👨‍🏫 ${lesson.teacher_name} | 👨‍🎓 ${lesson.student_name}<br>
-            📅 ${lesson.scheduled_date} ${lesson.start_time}-${lesson.end_time}
+            📅 ${lesson.schedule_date} ${lesson.start_time}-${lesson.end_time}
         </div>
     `;
     
@@ -1942,7 +1942,7 @@ function openLeaveModal() {
     document.getElementById('rescheduleFields').style.display = 'none';
     
     // 设置默认调课日期为原日期+7天
-    const originalDate = new Date(lesson.scheduled_date);
+    const originalDate = new Date(lesson.schedule_date);
     originalDate.setDate(originalDate.getDate() + 7);
     document.getElementById('rescheduleDate').value = originalDate.toISOString().split('T')[0];
     document.getElementById('rescheduleStartTime').value = lesson.start_time;
@@ -1977,7 +1977,7 @@ async function submitLeaveRequest() {
     const approvalData = {
         type: type,
         lesson_id: lessonId,
-        lesson_info: `${lesson.course_name_zh} - ${lesson.scheduled_date} ${lesson.start_time}`,
+        lesson_info: `${lesson.course_name_zh} - ${lesson.schedule_date} ${lesson.start_time}`,
         reason: reason,
         applicant: lesson.student_name || '未知',
         status: 'PENDING'
