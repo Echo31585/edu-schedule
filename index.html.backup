@@ -197,170 +197,85 @@
         </div>
     </div>
 
-        <!-- 排课模态框 - 修复版 v1.1 -->
-<div class="modal-overlay" id="lessonModal">
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h3 class="modal-title" id="lessonModalTitle">新增排课</h3>
-            <button class="modal-close" onclick="closeModal('lessonModal')">✕</button>
-        </div>
-        <div class="modal-body">
-            <input type="hidden" id="editLessonId">
-            
-            <!-- 课程类型选择 -->
-            <div class="form-group">
-                <label class="form-label">排课方式 *</label>
-                <select class="form-select" id="lessonMode" onchange="toggleBatchMode()">
-                    <option value="single">单节课程</option>
-                    <option value="batch">批量排课（日期区间）</option>
-                </select>
+    <!-- 排课模态框 -->
+    <div class="modal-overlay" id="lessonModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="lessonModalTitle">新增排课</h3>
+                <button class="modal-close" onclick="closeModal('lessonModal')">✕</button>
             </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">选择课程 *</label>
-                    <select class="form-select" id="lessonCourse"></select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">选择教师 *</label>
-                    <select class="form-select" id="lessonTeacher"></select>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">选择学生 *</label>
-                <select class="form-select" id="lessonStudent"></select>
-            </div>
-            
-            <!-- 单节课日期 -->
-            <div id="singleDateGroup" class="form-row">
-                <div class="form-group">
-                    <label class="form-label">上课日期 *</label>
-                    <input type="date" class="form-input" id="lessonDate">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">教室</label>
-                    <select class="form-select" id="lessonClassroom">
-                        <option value="A101">A101</option>
-                        <option value="A102">A102</option>
-                        <option value="A103">A103</option>
-                        <option value="B201">B201</option>
-                        <option value="B202">B202</option>
-                        <option value="B203">B203</option>
-                    </select>
-                </div>
-            </div>
-            
-            <!-- 批量排课日期区间 -->
-            <div id="batchDateGroup" style="display: none;">
+            <div class="modal-body">
+                <input type="hidden" id="editLessonId">
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">开始日期 *</label>
-                        <input type="date" class="form-input" id="batchStartDate">
+                        <label class="form-label">选择课程 *</label>
+                        <select class="form-select" id="lessonCourse"></select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">结束日期 *</label>
-                        <input type="date" class="form-input" id="batchEndDate">
+                        <label class="form-label">选择教师 *</label>
+                        <select class="form-select" id="lessonTeacher"></select>
                     </div>
                 </div>
-                
                 <div class="form-group">
-                    <label class="form-label">重复星期 *</label>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-                        <label style="display: flex; align-items: center; gap: 4px;">
-                            <input type="checkbox" class="batch-weekday" value="1"> 周一
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 4px;">
-                            <input type="checkbox" class="batch-weekday" value="2"> 周二
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 4px;">
-                            <input type="checkbox" class="batch-weekday" value="3"> 周三
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 4px;">
-                            <input type="checkbox" class="batch-weekday" value="4"> 周四
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 4px;">
-                            <input type="checkbox" class="batch-weekday" value="5"> 周五
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 4px;">
-                            <input type="checkbox" class="batch-weekday" value="6"> 周六
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 4px;">
-                            <input type="checkbox" class="batch-weekday" value="0"> 周日
-                        </label>
+                    <label class="form-label">选择学生 *</label>
+                    <select class="form-select" id="lessonStudent"></select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">上课日期 *</label>
+                        <input type="date" class="form-input" id="lessonDate">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">教室</label>
+                        <select class="form-select" id="lessonClassroom">
+                            <option value="A101">A101</option>
+                            <option value="A102">A102</option>
+                            <option value="A103">A103</option>
+                            <option value="B201">B201</option>
+                            <option value="B202">B202</option>
+                            <option value="B203">B203</option>
+                        </select>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label">教室</label>
-                    <select class="form-select" id="batchClassroom">
-                        <option value="A101">A101</option>
-                        <option value="A102">A102</option>
-                        <option value="A103">A103</option>
-                        <option value="B201">B201</option>
-                        <option value="B202">B202</option>
-                        <option value="B203">B203</option>
-                    </select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">开始时间 *</label>
+                        <select class="form-select" id="lessonStartTime">
+                            <option value="08:00">08:00</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                            <option value="19:00">19:00</option>
+                            <option value="20:00">20:00</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">结束时间 *</label>
+                        <select class="form-select" id="lessonEndTime">
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                            <option value="18:00">18:00</option>
+                            <option value="20:00">20:00</option>
+                            <option value="21:00">21:00</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">开始时间 *</label>
-                    <select class="form-select" id="lessonStartTime">
-                        <option value="08:00">08:00</option>
-                        <option value="09:00">09:00</option>
-                        <option value="10:00">10:00</option>
-                        <option value="11:00">11:00</option>
-                        <option value="14:00">14:00</option>
-                        <option value="15:00">15:00</option>
-                        <option value="16:00">16:00</option>
-                        <option value="17:00">17:00</option>
-                        <option value="19:00">19:00</option>
-                        <option value="20:00">20:00</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">结束时间 *</label>
-                    <select class="form-select" id="lessonEndTime">
-                        <option value="09:00">09:00</option>
-                        <option value="10:00">10:00</option>
-                        <option value="11:00">11:00</option>
-                        <option value="12:00">12:00</option>
-                        <option value="15:00">15:00</option>
-                        <option value="16:00">16:00</option>
-                        <option value="17:00">17:00</option>
-                        <option value="18:00">18:00</option>
-                        <option value="20:00">20:00</option>
-                        <option value="21:00">21:00</option>
-                    </select>
-                </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('lessonModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveLesson()">保存</button>
             </div>
-            
-            <!-- 是否扣课时选项 -->
-            <div class="form-group">
-                <label class="form-label">课程类型 *</label>
-                <select class="form-select" id="lessonType">
-                    <option value="regular">正式课程（扣课时）</option>
-                    <option value="trial">试听课（不扣课时）</option>
-                    <option value="makeup">补课（不扣课时）</option>
-                </select>
-                <small style="color: var(--gray-600); display: block; margin-top: 4px;">
-                    💡 试听课和补课不会扣除学生课时余额
-                </small>
-            </div>
-            
-            <div id="batchSummary" style="display: none; background: var(--primary-light); padding: 12px; border-radius: 8px; margin-top: 12px;">
-                <strong>📅 预计生成课程：</strong>
-                <span id="batchCount">0</span> 节
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('lessonModal')">取消</button>
-            <button class="btn btn-primary" onclick="saveLesson()">保存</button>
         </div>
     </div>
-</div>
 
     <!-- 排课详情模态框 -->
     <div class="modal-overlay" id="lessonDetailModal">

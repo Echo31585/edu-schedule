@@ -1184,14 +1184,10 @@ async function deleteCourseConfirm(id) {
 }
 
 // 排课模态框
-
-// 打开排课模态框
 function openLessonModal() {
     document.getElementById('lessonModalTitle').textContent = '新增排课';
     document.getElementById('editLessonId').value = '';
-    document.getElementById('lessonMode').value = 'single';
     
-    // 填充下拉选项
     const courseSelect = document.getElementById('lessonCourse');
     courseSelect.innerHTML = state.courses.length === 0 ? 
         '<option value="">请先添加课程</option>' :
@@ -1205,445 +1201,38 @@ function openLessonModal() {
     const studentSelect = document.getElementById('lessonStudent');
     studentSelect.innerHTML = state.students.length === 0 ?
         '<option value="">请先添加学生</option>' :
-        state.students.map(s => `<option value="${s.id}">${s.name_zh} (余额: ${s.balance})</option>`).join('');
+        state.students.map(s => `<option value="${s.id}">${s.name_zh} (余额:${s.balance})</option>`).join('');
     
-    // 设置默认值
     document.getElementById('lessonDate').value = getTodayDate();
-    document.getElementById('batchStartDate').value = getTodayDate();
-    document.getElementById('batchEndDate').value = getDateAfterDays(30); // 默认30天后
     document.getElementById('lessonStartTime').value = '09:00';
     document.getElementById('lessonEndTime').value = '10:00';
-    document.getElementById('lessonType').value = 'regular';
-    
-    // 重置批量模式
-    toggleBatchMode();
     
     openModal('lessonModal');
 }
 
-// 切换批量/单节模式
-function toggleBatchMode() {
-    const mode = document.getElementById('lessonMode').value;
-    const singleGroup = document.getElementById('singleDateGroup');
-    const batchGroup = document.getElementById('batchDateGroup');
-    const batchSummary = document.getElementById('batchSummary');
-    
-    if (mode === 'batch') {
-        singleGroup.style.display = 'none';
-        batchGroup.style.display = 'block';
-        batchSummary.style.display = 'block';
-        updateBatchCount();
-    } else {
-        singleGroup.style.display = 'flex';
-        batchGroup.style.display = 'none';
-        batchSummary.style.display = 'none';
-    }
-}
-
-// 更新批量排课数量预览
-function updateBatchCount() {
-    const startDate = document.getElementById('batchStartDate').value;
-    const endDate = document.getElementById('batchEndDate').value;
-    const checkboxes = document.querySelectorAll('#batchDateGroup input[type="checkbox"]:checked');
-    
-    if (!startDate || !endDate || checkboxes.length === 0) {
-        document.getElementById('batchCount').textContent = '0';
-        return;
-    }
-    
-    const selectedDays = Array.from(checkboxes).map(cb => parseInt(cb.value));
-    let count = 0;
-    let current = new Date(startDate);
-    const end = new Date(endDate);
-    
-    while (current <= end) {
-        if (selectedDays.includes(current.getDay())) {
-            count++;
-        }
-        current.setDate(current.getDate() + 1);
-    }
-    
-    document.getElementById('batchCount').textContent = count;
-}
-
-// 保存排课（支持批量）
-async function saveLesson() {
-    const mode = document.getElementById('lessonMode').value;
-    const id = document.getElementById('editLessonId').value;
-    
-    // 编辑模式不支持批量
-    if (id) {
-        await saveSingleLesson(id);
-        return;
-    }
-    
-    if (mode === 'batch') {
-        await saveBatchLessons();
-    } else {
-        await saveSingleLesson(null);
-    }
-}
-
-// 保存单节课
-async function saveSingleLesson(editId) {
-    const courseId = document.getElementById('lessonCourse').value;
-    const teacherId = document.getElementById('lessonTeacher').value;
-    const studentId = document.getElementById('lessonStudent').value;
-    const date = document.getElementById('lessonDate').value;
-    const startTime = document.getElementById('lessonStartTime').value;
-    const endTime = document.getElementById('lessonEndTime').value;
-    const classroom = document.getElementById('lessonClassroom').value;
-    const lessonType = document.getElementById('lessonType').value;
-    
-    // 验证必填项
-    if (!courseId || !teacherId || !studentId || !date) {
-        showToast('请填写完整信息', 'error');
-        return;
-    }
-    
-    // 验证时间
-    if (startTime >= endTime) {
-        showToast('结束时间必须晚于开始时间', 'error');
-        return;
-    }
-    
-    const course = state.courses.find(c => c.id == courseId);
-    const teacher = state.teachers.find(t => t.id == teacherId);
-    const student = state.students.find(s => s.id == studentId);
-    
-    // 冲突检测
-    const conflicts = checkScheduleConflicts(
-        editId ? parseInt(editId) : null,
-        date,
-        startTime,
-        endTime,
-        parseInt(teacherId),
-        parseInt(studentId),
-        classroom
-    );
-    
-    if (conflicts.length > 0) {
-        showToast(`排课冲突：${conflicts.join('；')}`, 'error');
-        return;
-    }
-    
-    const data = {
-        course_id: parseInt(courseId),
-        teacher_id: parseInt(teacherId),
-        student_id: parseInt(studentId),
-        course_name_zh: course ? course.name_zh : '',
-        course_name_en: course ? course.name_en : '',
-        teacher_name: teacher ? teacher.name_zh : '',
-        student_name: student ? student.name_zh : '',
-        scheduled_date: date,
-        start_time: startTime,
-        end_time: endTime,
-        classroom: classroom,
-        status: 'SCHEDULED',
-        type: lessonType  // 'regular', 'trial', or 'makeup'
-    };
-    
-    try {
-        if (editId) {
-            await updateLesson(parseInt(editId), data);
-            showToast('修改成功', 'success');
-        } else {
-            await addLesson(data);
-            showToast('排课成功', 'success');
-        }
-        
-        // 重新加载数据并刷新页面
-        state.lessons = await getLessons();
-        closeModal('lessonModal');
-        renderCurrentPage();
-    } catch (error) {
-        console.error('保存排课失败:', error);
-        showToast('保存失败，请重试', 'error');
-    }
-}
-
-// 批量保存课程
-async function saveBatchLessons() {
-    const courseId = document.getElementById('lessonCourse').value;
-    const teacherId = document.getElementById('lessonTeacher').value;
-    const studentId = document.getElementById('lessonStudent').value;
-    const startDate = document.getElementById('batchStartDate').value;
-    const endDate = document.getElementById('batchEndDate').value;
-    const startTime = document.getElementById('lessonStartTime').value;
-    const endTime = document.getElementById('lessonEndTime').value;
-    const classroom = document.getElementById('batchClassroom').value;
-    const lessonType = document.getElementById('lessonType').value;
-    
-    // 验证必填项
-    if (!courseId || !teacherId || !studentId || !startDate || !endDate) {
-        showToast('请填写完整信息', 'error');
-        return;
-    }
-    
-    // 获取选中的星期
-    const checkboxes = document.querySelectorAll('#batchDateGroup input[type="checkbox"]:checked');
-    if (checkboxes.length === 0) {
-        showToast('请至少选择一个星期', 'error');
-        return;
-    }
-    
-    const selectedDays = Array.from(checkboxes).map(cb => parseInt(cb.value));
-    
-    // 验证时间
-    if (startTime >= endTime) {
-        showToast('结束时间必须晚于开始时间', 'error');
-        return;
-    }
-    
-    const course = state.courses.find(c => c.id == courseId);
-    const teacher = state.teachers.find(t => t.id == teacherId);
-    const student = state.students.find(s => s.id == studentId);
-    
-    // 生成日期列表
-    const dates = [];
-    let current = new Date(startDate);
-    const end = new Date(endDate);
-    
-    while (current <= end) {
-        if (selectedDays.includes(current.getDay())) {
-            dates.push(current.toISOString().split('T')[0]);
-        }
-        current.setDate(current.getDate() + 1);
-    }
-    
-    if (dates.length === 0) {
-        showToast('所选日期区间内没有符合条件的日期', 'error');
-        return;
-    }
-    
-    // 检查所有日期的冲突
-    let conflictDates = [];
-    for (const date of dates) {
-        const conflicts = checkScheduleConflicts(
-            null,
-            date,
-            startTime,
-            endTime,
-            parseInt(teacherId),
-            parseInt(studentId),
-            classroom
-        );
-        if (conflicts.length > 0) {
-            conflictDates.push(date);
-        }
-    }
-    
-    if (conflictDates.length > 0) {
-        const confirmMsg = `以下日期存在冲突：${conflictDates.join(', ')}\n\n是否跳过冲突日期，仅添加无冲突的课程？`;
-        if (!confirm(confirmMsg)) {
-            return;
-        }
-        // 过滤掉冲突日期
-        const validDates = dates.filter(d => !conflictDates.includes(d));
-        if (validDates.length === 0) {
-            showToast('所有日期都存在冲突，无法添加', 'error');
-            return;
-        }
-    }
-    
-    // 批量添加课程
-    showToast('正在批量添加课程...', 'info');
-    let successCount = 0;
-    
-    for (const date of dates) {
-        if (conflictDates.includes(date)) continue;
-        
-        const data = {
-            course_id: parseInt(courseId),
-            teacher_id: parseInt(teacherId),
-            student_id: parseInt(studentId),
-            course_name_zh: course ? course.name_zh : '',
-            course_name_en: course ? course.name_en : '',
-            teacher_name: teacher ? teacher.name_zh : '',
-            student_name: student ? student.name_zh : '',
-            scheduled_date: date,
-            start_time: startTime,
-            end_time: endTime,
-            classroom: classroom,
-            status: 'SCHEDULED',
-            type: lessonType
-        };
-        
-        try {
-            await addLesson(data);
-            successCount++;
-        } catch (error) {
-            console.error(`添加 ${date} 的课程失败:`, error);
-        }
-    }
-    
-    // 重新加载数据并刷新页面
-    state.lessons = await getLessons();
-    closeModal('lessonModal');
-    showToast(`成功添加 ${successCount} 节课程`, 'success');
-    renderCurrentPage();
-}
-
-// 完成课程（修复版 - 考虑课程类型）
-async function completeLessonFromDetail() {
-    const id = parseInt(document.getElementById('lessonDetailId').value);
+function editLesson(id) {
     const lesson = state.lessons.find(l => l.id === id);
+    if (!lesson) return;
     
-    if (!lesson) {
-        showToast('课程不存在', 'error');
-        return;
-    }
+    document.getElementById('lessonModalTitle').textContent = '编辑排课';
+    document.getElementById('editLessonId').value = id;
     
-    if (lesson.status === 'COMPLETED') {
-        showToast('课程已完成，无需重复操作', 'warning');
-        return;
-    }
+    const courseSelect = document.getElementById('lessonCourse');
+    courseSelect.innerHTML = state.courses.map(c => `<option value="${c.id}" ${c.id === lesson.course_id ? 'selected' : ''}>${c.name_zh}</option>`).join('');
     
-    if (lesson.status === 'CANCELLED') {
-        showToast('已取消的课程无法标记为完成', 'error');
-        return;
-    }
+    const teacherSelect = document.getElementById('lessonTeacher');
+    teacherSelect.innerHTML = state.teachers.map(t => `<option value="${t.id}" ${t.id === lesson.teacher_id ? 'selected' : ''}>${t.name_zh}</option>`).join('');
     
-    const student = state.students.find(s => s.id === lesson.student_id);
-    if (!student) {
-        showToast('找不到学生信息', 'error');
-        return;
-    }
+    const studentSelect = document.getElementById('lessonStudent');
+    studentSelect.innerHTML = state.students.map(s => `<option value="${s.id}" ${s.id === lesson.student_id ? 'selected' : ''}>${s.name_zh} (余额:${s.balance})</option>`).join('');
     
-    // 检查课程类型
-    const lessonType = lesson.type || 'regular';
-    const willDeductBalance = lessonType === 'regular';
+    document.getElementById('lessonDate').value = lesson.scheduled_date;
+    document.getElementById('lessonStartTime').value = lesson.start_time;
+    document.getElementById('lessonEndTime').value = lesson.end_time;
+    document.getElementById('lessonClassroom').value = lesson.classroom;
     
-    let confirmMsg = `确认完成课程吗？\n\n课程：${lesson.course_name_zh}\n学生：${lesson.student_name}`;
-    
-    if (willDeductBalance) {
-        confirmMsg += `\n当前余额：${student.balance}\n完成后余额：${student.balance - 1}`;
-    } else {
-        const typeNames = {
-            'trial': '试听课',
-            'makeup': '补课'
-        };
-        confirmMsg += `\n\n💡 此为${typeNames[lessonType] || '特殊课程'}，不会扣除课时`;
-    }
-    
-    if (!confirm(confirmMsg)) return;
-    
-    try {
-        // 更新课程状态
-        await updateLesson(id, { status: 'COMPLETED' });
-        
-        // 根据课程类型决定是否扣课时
-        if (willDeductBalance) {
-            await updateStudent(lesson.student_id, { 
-                balance: student.balance - 1 
-            });
-            
-            // 生成消息
-            await addMessage({
-                sender: 'System',
-                avatar: '🤖',
-                content: `课程已完成，已从 ${lesson.student_name} 扣除 1 课时。当前余额：${student.balance - 1}`,
-                time: new Date().toISOString(),
-                unread: true
-            });
-        } else {
-            // 生成消息（不扣课时）
-            await addMessage({
-                sender: 'System',
-                avatar: '🤖',
-                content: `${lesson.type === 'trial' ? '试听' : '补'}课程已完成，未扣除课时。学生：${lesson.student_name}`,
-                time: new Date().toISOString(),
-                unread: true
-            });
-        }
-        
-        // 重新加载数据
-        state.lessons = await getLessons();
-        state.students = await getStudents();
-        state.messages = await getMessages();
-        
-        closeModal('lessonDetailModal');
-        showToast(willDeductBalance ? '课程已完成，已扣除课时' : '课程已完成', 'success');
-        renderCurrentPage();
-        updateNotificationDot();
-    } catch (error) {
-        console.error('完成课程失败:', error);
-        showToast('操作失败，请重试', 'error');
-    }
+    openModal('lessonModal');
 }
-
-// 辅助函数：获取N天后的日期
-function getDateAfterDays(days) {
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    return date.toISOString().split('T')[0];
-}
-
-// 辅助函数：获取今天日期
-function getTodayDate() {
-    return new Date().toISOString().split('T')[0];
-}
-
-// 增强版冲突检测
-function checkScheduleConflicts(excludeId, date, startTime, endTime, teacherId, studentId, classroom) {
-    const conflicts = [];
-    
-    // 获取同一日期的所有排课（排除当前编辑的课程）
-    const sameDayLessons = state.lessons.filter(l => 
-        l.scheduled_date === date && 
-        l.status !== 'CANCELLED' &&  // 忽略已取消的课程
-        (excludeId === null || l.id !== excludeId)
-    );
-    
-    // 检测时间重叠的辅助函数
-    function isTimeOverlap(start1, end1, start2, end2) {
-        return start1 < end2 && end1 > start2;
-    }
-    
-    for (const lesson of sameDayLessons) {
-        const hasTimeOverlap = isTimeOverlap(startTime, endTime, lesson.start_time, lesson.end_time);
-        
-        if (hasTimeOverlap) {
-            // 教师冲突
-            if (lesson.teacher_id === teacherId) {
-                conflicts.push(`教师「${lesson.teacher_name}」在 ${lesson.start_time}-${lesson.end_time} 已有课程`);
-            }
-            
-            // 学生冲突
-            if (lesson.student_id === studentId) {
-                conflicts.push(`学生「${lesson.student_name}」在 ${lesson.start_time}-${lesson.end_time} 已有课程`);
-            }
-            
-            // 教室冲突
-            if (lesson.classroom === classroom && classroom) {
-                conflicts.push(`教室「${classroom}」在 ${lesson.start_time}-${lesson.end_time} 已被占用`);
-            }
-        }
-    }
-    
-    return conflicts;
-}
-
-// 为批量日期选择添加事件监听（在页面加载后调用）
-document.addEventListener('DOMContentLoaded', function() {
-    // 为批量模式的复选框和日期添加监听
-    const batchStartDate = document.getElementById('batchStartDate');
-    const batchEndDate = document.getElementById('batchEndDate');
-    
-    if (batchStartDate) {
-        batchStartDate.addEventListener('change', updateBatchCount);
-    }
-    if (batchEndDate) {
-        batchEndDate.addEventListener('change', updateBatchCount);
-    }
-    
-    // 为所有复选框添加监听
-    const checkboxes = document.querySelectorAll('#batchDateGroup input[type="checkbox"]');
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', updateBatchCount);
-    });
-});
-
 
 // 显示课程详情
 function showLessonDetail(id) {
