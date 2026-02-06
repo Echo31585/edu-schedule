@@ -255,7 +255,7 @@ async function getLessons() {
         const { data, error } = await db
             .from('lessons')
             .select('*')
-            .order('scheduled_date')
+            .order('schedule_date')
             .order('start_time');
         
         if (error) throw error;
@@ -376,7 +376,7 @@ async function handleRescheduleApproval(approvalId, status, lessonId, newDate, n
     
     // 如果通过，更新课程时间
     if (status === 'APPROVED' && lessonId && newDate) {
-        const updates = { scheduled_date: newDate };
+        const updates = { schedule_date: newDate };
         if (newStartTime) updates.start_time = newStartTime;
         if (newEndTime) updates.end_time = newEndTime;
         
