@@ -251,14 +251,20 @@ async function deleteCourse(id) {
 
 // ---------- 排课 Lessons ----------
 async function getLessons() {
-    const { data, error } = await db
-        .from('lessons')
-        .select('*')
-        .order('scheduled_date', { ascending: true });
-    if (error) console.error('获取排课失败:', error);
-    return data || [];
+    try {
+        const { data, error } = await db
+            .from('lessons')
+            .select('*')
+            .order('scheduled_date')
+            .order('start_time');
+        
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('获取排课失败:', error);
+        return [];
+    }
 }
-
 async function addLesson(lesson) {
     const { data, error } = await db
         .from('lessons')
