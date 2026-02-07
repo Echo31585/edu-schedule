@@ -16,7 +16,13 @@ const state = {
     settlementYear: new Date().getFullYear(),
     settlementMonth: new Date().getMonth() + 1
 };
-
+// ==================== 工具函数 ====================
+// 时间格式化函数：统一处理 HH:MM:SS 和 HH:MM 格式
+function formatTime(timeStr) {
+    if (!timeStr) return '';
+    // 截取前5位：HH:MM:SS -> HH:MM
+    return timeStr.substring(0, 5);
+}
 // 用户信息
 const mockUsers = {
     ADMIN: { name: '教务管理员', avatar: '👩‍💼' },
@@ -370,7 +376,7 @@ async function generateLessonsData() {
             
             const exists = state.lessons.find(l => 
                 l.schedule_date === day.date && 
-                l.start_time === time && 
+                formatTime(l.start_time) === time && 
                 l.teacher_id === teacher.id
             );
             
@@ -604,7 +610,7 @@ function renderWeekView() {
             ${times.map(time => `
                 <div class="schedule-time-cell">${time}</div>
                 ${weekDays.map(d => {
-                    const dayLessons = state.lessons.filter(l => l.schedule_date === d.date && l.start_time === time);
+                    const dayLessons = state.lessons.filter(l => l.schedule_date === d.date && formatTime(l.start_time) === time);
                     return `<div class="schedule-cell">
                         ${dayLessons.map(l => `
                             <div class="schedule-lesson ${l.status === 'COMPLETED' ? 'completed' : ''} ${l.status === 'CANCELLED' ? 'cancelled' : ''}" onclick="showLessonDetail(${l.id})">
@@ -640,7 +646,7 @@ function renderDayView() {
         
         <div class="day-view-container">
             ${times.map(time => {
-                const timeLessons = dayLessons.filter(l => l.start_time === time);
+                const timeLessons = dayLessons.filter(l => formatTime(l.start_time) === time);
                 return `
                     <div class="day-time-row">
                         <div class="day-time-label">${time}</div>
